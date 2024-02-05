@@ -1,14 +1,24 @@
 import { getPost } from "@/api/postAPI"
 
-export default function Single({ params }) {
+export async function generateMetadata({ params }) {
+    const { id } = params
+    const post = await getPost(id)
+
+    return {
+        title: post.title,
+        description: post.body,
+    }
+}
+
+export default async function Single({ params }) {
 
     const { id } = params
-
-    const post = getPost(id)
-
-    console.log(post);
+    const post = await getPost(id)
 
     return (
-        <h1>{post.tittle}</h1>
+        <div>
+            <h1 className="text-green-500">{post.title}</h1>
+            <p>{post.body}</p>
+        </div>
     )
 }
