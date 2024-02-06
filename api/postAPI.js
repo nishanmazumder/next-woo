@@ -19,3 +19,11 @@ export async function getPost(id) {
             throw new Error(e)
         })
 }
+
+export async function getComment(id) {
+    return await fetch(`https://dummyjson.com/comments/${id}`)
+        .then(res => res.json())
+        .catch(e => {
+            throw new Error(e)
+        })
+}
