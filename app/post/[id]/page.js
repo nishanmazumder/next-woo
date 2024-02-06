@@ -1,4 +1,4 @@
-import { getComment, getPost } from "@/api/postAPI";
+import { getComment, getPost, getPosts } from "@/api/postAPI";
 import Comment from "@/app/components/Comment";
 import { Suspense } from "react"
 
@@ -31,4 +31,10 @@ export default async function Single({ params }) {
             </div>
         </div>
     )
+}
+
+export async function generateStaticParams() {
+    const { posts } = await getPosts();
+
+    return posts.map(post => ({ id: post.id.toString() }))
 }
