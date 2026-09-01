@@ -33,6 +33,7 @@ export async function connectDB(): Promise<typeof mongoose> {
   if (!cached.promise) {
     cached.promise = mongoose.connect(mongoUrl, {
       bufferCommands: false,
+      dbName: "next_woo",
     });
   }
 
