@@ -24,3 +24,17 @@ export interface Comment {
   likes: number;
   user: User;
 }
+
+export interface BlogListResponse {
+  _id?: string;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  content: string;
+  coverImage?: string;
+  author: string;
+  status: "draft" | "published";
+  publishedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}

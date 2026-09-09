@@ -1,6 +1,7 @@
-import type { Comment, Post, PostListResponse } from "@/types/post";
+import type { BlogListResponse, Comment, Post, PostListResponse } from "@/types/post";
 
 const API_BASE_URL = "https://dummyjson.com";
+const API_BLOG_URL = "http://localhost:3000";
 
 async function fetchJson<T>(
   path: string,
@@ -17,8 +18,31 @@ async function fetchJson<T>(
   return (await response.json()) as T;
 }
 
+async function fetchJsonBlog<T>(
+  path: string,
+  options?: RequestInit,
+): Promise<T> {
+  const response = await fetch(`${API_BLOG_URL}${path}`, options);
+
+  if (!response.ok) {
+    throw new Error(
+      `Blog request failed: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  return (await response.json()) as T;
+}
+
 export function getPosts(): Promise<PostListResponse> {
   return fetchJson<PostListResponse>("/posts?limit=10", {
+    next: {
+      revalidate: 10,
+    },
+  });
+}
+
+export function getBlogs(): Promise<{ blogs: BlogListResponse[] }> {
+  return fetchJsonBlog<{ blogs: BlogListResponse[] }>("/api/blogs", {
     next: {
       revalidate: 10,
     },
