@@ -14,7 +14,16 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body = await request.formData();
+
+    // console.log("request");
+
+
+    console.log("body", body);
+
+    return;
+
+
     const { title, slug, excerpt, content, coverImage, author, status } = body;
 
     if (
@@ -29,7 +38,17 @@ export async function POST(request: Request) {
       );
     }
 
-    await connectDB();
+    // await connectDB();
+
+
+    const file = coverImage as File;
+
+    console.log("file", file);
+
+    return;
+
+
+
     const blog = await BlogModel.create({
       title,
       slug,

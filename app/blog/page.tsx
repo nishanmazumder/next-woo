@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default async function BlogPage() {
   const { blogs } = await getBlogs();
 
-  console.log("blogs", blogs);
+  // console.log("blogs", blogs);
 
   return (
     <main className="p-6">
