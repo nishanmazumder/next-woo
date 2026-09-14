@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { connectDB } from "@/database/db";
 import { BlogModel } from "@/database/models/Blog";
+import type { BlogListResponse } from "@/types/post";
+import { v2 as cloudinary } from "cloudinary";
 
 export const runtime = "nodejs";
 
@@ -14,17 +16,40 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.formData();
+    const formData = await request.formData();
 
-    // console.log("request");
+    let obj;
+
+    try {
+      obj = Object.fromEntries(formData.entries());
+    } catch (error) {
+      return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
+    }
+
+    const { title, slug, excerpt, content, author, status } = obj;
 
 
-    console.log("body", body);
+    const imagefile = formData.get("coverImage") as File;
 
-    return;
+    if(!imagefile || imagefile.size === 0) {
+      return NextResponse.json({ error: "coverImage is required" }, { status: 400 });
+    }
 
+    const imageBuffer = await imagefile.arrayBuffer();
+    const buffer = Buffer.from(imageBuffer);
 
-    const { title, slug, excerpt, content, coverImage, author, status } = body;
+    const uploadeResult = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        { resource_type: "image", folder: 'blogs' },
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      ).end(buffer);
+    });
 
     if (
       typeof title !== "string" ||
@@ -38,23 +63,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // await connectDB();
-
-
-    const file = coverImage as File;
-
-    console.log("file", file);
-
-    return;
-
-
-
     const blog = await BlogModel.create({
       title,
       slug,
       excerpt,
       content,
-      coverImage,
+      coverImage: ( uploadeResult as { secure_url: string }).secure_url,
       author,
       status,
       publishedAt: status === "published" ? new Date() : undefined,

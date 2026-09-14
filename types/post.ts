@@ -35,6 +35,6 @@ export interface BlogListResponse {
   author: string;
   status: "draft" | "published";
   publishedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
