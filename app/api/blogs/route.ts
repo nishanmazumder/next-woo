@@ -1,96 +1,101 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
+import cloudinary from "@/lib/cloudinary";
+import type { UploadApiResponse } from "cloudinary";
 
 import { connectDB } from "@/database/db";
 import { BlogModel } from "@/database/models/Blog";
-import type { BlogListResponse } from "@/types/post";
-import { v2 as cloudinary } from "cloudinary";
 
-export const runtime = "nodejs";
 
-export async function GET() {
-  await connectDB();
-  const blogs = await BlogModel.find().sort({ createdAt: -1 }).lean();
+export async function POST(request: NextRequest) {
+  try {
+    await connectDB();
 
-  return NextResponse.json({ blogs });
+    const formData = await request.formData();
+    const blog = Object.fromEntries(
+      formData.entries()
+    );
+
+    const imagefile = formData.get("coverImage");
+    if (!(imagefile instanceof File)) {
+      return NextResponse.json(
+        {
+          error: "coverImage must be a file",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const buffer = Buffer.from(
+      await imagefile.arrayBuffer()
+    );
+
+    const uploadResult = await uploadImage(buffer);
+    blog.coverImage = uploadResult.secure_url;
+
+    const createdBlog =
+      await BlogModel.create({
+        ...blog,
+        publishedAt:
+          blog.status === "published"
+            ? new Date()
+            : undefined,
+      });
+
+    return NextResponse.json(
+      {
+        blog: createdBlog,
+      },
+      {
+        status: 201,
+      }
+    );
+
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unknown error",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }
 
-export async function POST(request: Request) {
-  try {
-    const formData = await request.formData();
+async function uploadImage(
+  buffer: Buffer
+): Promise<UploadApiResponse> {
 
-    let obj;
+  return new Promise(
+    (resolve, reject) => {
 
-    try {
-      obj = Object.fromEntries(formData.entries());
-    } catch (error) {
-      return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
-    }
+      cloudinary.uploader
+        .upload_stream(
+          {
+            folder: "blogs",
+            resource_type: "image",
+          },
 
-    const { title, slug, excerpt, content, author, status } = obj;
+          (error, result) => {
+            
+            if (error) {
+              reject(error);
+              return;
+            }
 
-
-    const imagefile = formData.get("coverImage") as File;
-
-    if(!imagefile || imagefile.size === 0) {
-      return NextResponse.json({ error: "coverImage is required" }, { status: 400 });
-    }
-
-    const imageBuffer = await imagefile.arrayBuffer();
-    const buffer = Buffer.from(imageBuffer);
-
-    const uploadeResult = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
-        { resource_type: "image", folder: 'blogs' },
-        (error, result) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(result);
+            resolve(
+              result as UploadApiResponse
+            );
           }
-        }
-      ).end(buffer);
-    });
-
-    if (
-      typeof title !== "string" ||
-      typeof slug !== "string" ||
-      typeof content !== "string" ||
-      typeof author !== "string"
-    ) {
-      return NextResponse.json(
-        { error: "title, slug, content, and author are required" },
-        { status: 400 },
-      );
+        )
+        .end(buffer);
     }
-
-    const blog = await BlogModel.create({
-      title,
-      slug,
-      excerpt,
-      content,
-      coverImage: ( uploadeResult as { secure_url: string }).secure_url,
-      author,
-      status,
-      publishedAt: status === "published" ? new Date() : undefined,
-    });
-
-    return NextResponse.json({ blog }, { status: 201 });
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-    }
-
-    if (error instanceof Error && error.name === "ValidationError") {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    if (error instanceof Error && error.name === "MongoServerError") {
-      return NextResponse.json(
-        { error: "A blog with this slug already exists" },
-        { status: 409 },
-      );
-    }
-
-    throw error;
-  }
+  );
 }
