@@ -5,6 +5,29 @@ import type { UploadApiResponse } from "cloudinary";
 import { connectDB } from "@/database/db";
 import { BlogModel } from "@/database/models/Blog";
 
+export async function GET() {
+  try {
+    await connectDB();
+
+    const blogs = await BlogModel.find().sort({ createdAt: -1 }).lean();
+
+    return NextResponse.json({ blogs });
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unknown error",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {

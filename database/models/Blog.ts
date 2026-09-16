@@ -1,4 +1,4 @@
-import { model, models, Schema, type InferSchemaType } from "mongoose";
+import { model, models, Schema, Document, type InferSchemaType } from "mongoose";
 
 const blogSchema = new Schema(
   {
@@ -35,6 +35,16 @@ const blogSchema = new Schema(
       required: true,
       trim: true,
       maxlength: 100,
+    },
+    tags: {
+      type: [String],
+      required: [true, "Tags are required"],
+      trim: true,
+      validate: {
+        validator: (v: string[]) =>
+          v.length > 0 && v.every((tag) => tag.trim().length > 0),
+        message: "At least one valid tag is required",
+      },
     },
     status: {
       type: String,

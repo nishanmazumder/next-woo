@@ -1,7 +1,7 @@
 import type { BlogListResponse, Comment, Post, PostListResponse } from "@/types/post";
 
 const API_BASE_URL = "https://dummyjson.com";
-const API_BLOG_URL = "http://localhost:3000";
+const API_BLOG_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
 async function fetchJson<T>(
   path: string,

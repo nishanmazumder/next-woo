@@ -33,6 +33,7 @@ export interface BlogListResponse {
   content: string;
   coverImage?: string;
   author: string;
+  tags: string[];
   status: "draft" | "published";
   publishedAt?: Date;
   createdAt?: Date;
