@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-
-import { blogs } from "@/lib/data/blogs";
 import { getBlogs } from "@/lib/api/posts";
+import { cacheLife } from "next/cache";
 
 export const metadata: Metadata = {
   title: "Blog",
+  description: "List of blog posts",
 };
 
-
-
 export default async function BlogPage() {
+  'use cache';
+  cacheLife('hours') // Cache for 1 hour
+
   const { blogs } = await getBlogs();
 
   // const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/blogs`);

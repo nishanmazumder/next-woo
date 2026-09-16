@@ -4,6 +4,7 @@ import type { UploadApiResponse } from "cloudinary";
 
 import { connectDB } from "@/database/db";
 import { BlogModel } from "@/database/models/Blog";
+import { revalidatePath } from "next/cache";
 
 export async function GET() {
   try {
@@ -59,12 +60,10 @@ export async function POST(request: NextRequest) {
 
     const createdBlog =
       await BlogModel.create({
-        ...blog,
-        publishedAt:
-          blog.status === "published"
-            ? new Date()
-            : undefined,
+        ...blog
       });
+
+    revalidatePath("/blog");
 
     return NextResponse.json(
       {
