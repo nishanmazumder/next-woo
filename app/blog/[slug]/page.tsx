@@ -6,9 +6,27 @@ import { blogs, getBlogById } from "@/lib/data/blogs";
 import {getBlogs} from "@/lib/api/posts";
 import { getSimilarItems } from "@/lib/actions/blog.action";
 
-// generateStaticParams
-// generateMetadata
+export async function generateMetadata(
+  props: PageProps<"/blog/[slug]">,
+): Promise<Metadata> {
+  const { slug } = await props.params;
+  const { blogs } = await getBlogs();
+  const blog = blogs.find((blog) => blog.slug === slug);
 
+  if (!blog) {
+    notFound();
+  }
+
+  return {
+    title: blog.title,
+    description: blog.excerpt,
+  };
+}
+
+export async function generateStaticParams() {
+  const { blogs } = await getBlogs();
+  return blogs.map((blog) => ({ slug: blog.slug }));
+}
 
 export default async function BlogDetailPage(
   props: PageProps<"/blog/[slug]">,
