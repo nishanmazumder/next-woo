@@ -1,6 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
+import posthog from "posthog-js";
+
+import { isPostHogConfigured } from "@/instrumentation-client";
 
 interface ButtonProps {
   children?: ReactNode;
@@ -9,6 +12,10 @@ interface ButtonProps {
 export default function Button({ children = "Click" }: ButtonProps) {
   function handleClick() {
     console.log("click");
+
+    if (isPostHogConfigured) {
+      posthog.capture("test_interaction_clicked");
+    }
   }
 
   return (

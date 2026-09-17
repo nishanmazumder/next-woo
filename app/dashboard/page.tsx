@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Button from '@/components/Button'
 
 
 export default function Dashboard() {
@@ -11,6 +12,8 @@ export default function Dashboard() {
       <Link href="/dashboard/SeoAnalytics" className="rounded bg-white px-4 py-2 text-purple-600">
         SEO Analytics
       </Link>
+
+      <Button/>
     </section>
   );
 }

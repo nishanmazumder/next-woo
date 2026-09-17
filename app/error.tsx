@@ -1,6 +1,9 @@
 "use client";
 
+import posthog from "posthog-js";
 import { useEffect } from "react";
+
+import { isPostHogConfigured } from "../instrumentation-client";
 
 interface ErrorPageProps {
   error: Error & { digest?: string };
@@ -9,6 +12,10 @@ interface ErrorPageProps {
 
 export default function ErrorPage({ error, reset }: ErrorPageProps) {
   useEffect(() => {
+    if (isPostHogConfigured) {
+      posthog.captureException(error);
+    }
+
     console.error(error);
   }, [error]);
 
