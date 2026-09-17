@@ -5,6 +5,7 @@ import { blogs, getBlogById } from "@/lib/data/blogs";
 
 import {getBlogs} from "@/lib/api/posts";
 import { getSimilarItems } from "@/lib/actions/blog.action";
+import RecommendationForm from "@/components/Recomendation";
 
 export async function generateMetadata(
   props: PageProps<"/blog/[slug]">,
@@ -54,6 +55,9 @@ export default async function BlogDetailPage(
           ))}
         </div>
       </div>
+
+      <RecommendationForm blogId={blog?._id} blogSlug={blog?.slug} />
+
     </main>
   );
 }
